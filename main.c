@@ -58,34 +58,28 @@ typedef struct {
 ///Commande CREER
 ///Permet de creer un concour
 ///titre = Titre du concour
-Contexte CmdCreer(char titre[], Contexte context) {
-
-	ConcoursActifs concours = context.concours;
-	size_t length;
-	length = strlen(titre);
+void CmdCreer(char titre[], Contexte* context) {
+	size_t length = strlen(titre);
 
 	if (length <= 0 && length >= MAX_TEXTE) {
 		printf("Nom trop long");
-		return context;
+		return;
 	}
 
-	for (int i=0; i<=concours.nb; ++i) {
-		if (!strcmp(concours.concours[i].titre, titre)) {
+	for (int i=0; i<=context->concours.nb; ++i) {
+		if (!strcmp(context->concours.concours[i].titre, titre)) {
 			printf("Nom incorrect");
-			return context;
+			return;
 		}
 	}
 
 	Concour nv_concour;
 	strcpy(nv_concour.titre,titre);
 
-	concours.concours[concours.nb] = nv_concour;
-	++concours.nb;
+	context->concours.concours[context->concours.nb] = nv_concour;
+	++context->concours.nb;
 
-	printf("Creation enregistree (%d)", concours.nb);
-
-	context.concours = concours;
-	return context;
+	printf("Creation enregistree (%d)", context->concours.nb);
 }
 
 ///Commande PARTICIPANTS
@@ -137,7 +131,7 @@ Arguments cmdProcessArgs(char input[]) {
 }
 
 ///Detection des commandes
-Contexte cmdProcess(char input[], Contexte context) {
+void cmdProcess(char input[], Contexte* context) {
 
 	Arguments args;
 	args = cmdProcessArgs(input);
@@ -146,12 +140,12 @@ Contexte cmdProcess(char input[], Contexte context) {
 	
 	//PARTICIPANTS
 	if (!strcmp(commande, "PARTICIPANTS")) {
-		CmdParticipants(context);
+		CmdParticipants(*context);
 	}
 	//CREER
 	else if (!strcmp(commande, "CREER")) {
 		if (args.nb == 2) {
-			context = CmdCreer(args.values[1], context);
+			CmdCreer(args.values[1], context);
 		}
 		else {
 			printf("CREER [titre]");
@@ -159,15 +153,12 @@ Contexte cmdProcess(char input[], Contexte context) {
 	}
 	//EXIT
 	else if (!strcmp(commande, "EXIT")) {
-		context.exit = 1;
-		return context;
+		context->exit = 1;
 	}
 	else {
 		printf("Commande non reconnue");
 	}
-
 	printf("\n");
-	return context;
 }
 
 int main() {
@@ -180,6 +171,6 @@ int main() {
 	while (contexte.exit == 0) {
 		char commande[MAX_TEXTE] = "";
 		fgets(commande, MAX_TEXTE, stdin);
-		contexte = cmdProcess(commande, contexte);
+		cmdProcess(commande, &contexte);
 	}
 }
