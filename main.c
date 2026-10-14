@@ -19,7 +19,7 @@ typedef struct{
 //inscription = Tableau des identifiants des participants inscrits
 typedef struct{
 	char titre[MAX_TEXTE];
-	int inscipritions[MAX_CONCOURS];
+	int inscipritions[MAX_PARTICIPANTS];
 } Concour;
 
 //Ensemble des concours actifs
@@ -138,7 +138,7 @@ Arguments cmdProcessArgs(char input[]) {
 
 ///Detection des commandes
 Contexte cmdProcess(char input[], Contexte context) {
-	
+
 	Arguments args;
 	args = cmdProcessArgs(input);
 	char commande[MAX_TEXTE+1];
