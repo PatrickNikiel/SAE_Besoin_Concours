@@ -1,23 +1,31 @@
 #include<stdio.h>
 #include<string.h>
-
-enum {MAX_PARTICIPANTS = 100};
-enum {MAX_TEXTE = 30};
-enum {MAX_CONCOURS = 20};
-enum {MAX_ARGS = 4};
+#pragma warning(disable:4996)
+enum { MAX_PARTICIPANTS = 100 };
+enum { MAX_TEXTE = 30 };
+enum { MAX_CONCOURS = 20 };
+enum { MAX_ARGS = 4 };
 
 //Contenu d'un participant
 //nom = Nom du participant
 //prenom = Prenom du participant
-typedef struct{
+typedef struct {
 	char nom[MAX_TEXTE];
 	char prenom[MAX_TEXTE];
 } Participant;
 
+//Ensemble des participants inscrits
+//participant = Ensemble des participants
+//nb = Nombre de participants
+typedef struct {
+	Participant participants[MAX_PARTICIPANTS];
+	int nb;
+} ParticipantsActif;
+
 //Contenu d'un concour
 //titre = Titre du concour
 //inscription = Tableau des identifiants des participants inscrits
-typedef struct{
+typedef struct {
 	char titre[MAX_TEXTE];
 	int inscipritions[MAX_PARTICIPANTS];
 } Concour;
@@ -30,17 +38,10 @@ typedef struct {
 	int nb;
 } ConcoursActifs;
 
-//Ensemble des participants inscrits
-//participant = Ensemble des participants
-//nb = Nombre de participants
-typedef struct {
-	Participant participants[MAX_PARTICIPANTS];
-	int nb;
-} ParticipantsActif;
-
 //Contexte de la session du programme
-//participants = Participants inscrits en mÃ©moire
-//concouts = Concours inscrits en mÃ©moire
+//participants = Participants inscrits en mémoire
+//concouts = Concours inscrits en mémoire
+//EXIT : si exit = 1 fin de la boucle
 typedef struct {
 	ParticipantsActif participants;
 	ConcoursActifs concours;
@@ -51,7 +52,7 @@ typedef struct {
 //values = Liste de valeurs des arguments
 //nb = Nombre d'arguments
 typedef struct {
-	char values[MAX_ARGS][MAX_TEXTE+1];
+	char values[MAX_ARGS][MAX_TEXTE];
 	int nb;
 } Arguments;
 
@@ -61,12 +62,12 @@ typedef struct {
 void CmdCreer(char titre[], Contexte* context) {
 	size_t length = strlen(titre);
 
-	if (length <= 0 && length >= MAX_TEXTE) {
+	if (length <= 0 || length >= MAX_TEXTE) {
 		printf("Nom trop long");
 		return;
 	}
 
-	for (int i=0; i<=context->concours.nb; ++i) {
+	for (int i = 0; i <= context->concours.nb; ++i) {
 		if (!strcmp(context->concours.concours[i].titre, titre)) {
 			printf("Nom incorrect");
 			return;
@@ -74,7 +75,7 @@ void CmdCreer(char titre[], Contexte* context) {
 	}
 
 	Concour nv_concour;
-	strcpy(nv_concour.titre,titre);
+	strcpy(nv_concour.titre, titre);
 
 	context->concours.concours[context->concours.nb] = nv_concour;
 	++context->concours.nb;
@@ -87,7 +88,7 @@ void CmdCreer(char titre[], Contexte* context) {
 void CmdParticipants(Contexte context) {
 	ParticipantsActif participants = context.participants;
 	if (participants.nb != 0) {
-		for (int i=0; i<participants.nb; ++i) {
+		for (int i = 0; i < participants.nb; ++i) {
 			Participant p = participants.participants[participants.nb];
 			printf("(%d) %s %s : X concours\n", i, p.nom, p.prenom);
 		}
@@ -100,21 +101,23 @@ void CmdParticipants(Contexte context) {
 ///Commande CONCOURS
 ///Affiche la liste des concours
 void CmdConcours() {
-	
+
 }
 
 ///Recuperation des arguments
 Arguments cmdProcessArgs(char input[]) {
-	Arguments args = {};
+	Arguments args;
+	args.nb = 0;
 	int i = 0;
 	int ri = 0;
 
 	//Lecture commande et arguments
 	while (input[i] != '\0') {
 		if (input[i] == ' ') {
+
 			++args.nb;
 			ri = 0;
-			if (args.nb> MAX_ARGS) {
+			if (args.nb > MAX_ARGS) {
 				printf("Trop d'arguments");
 				return args;
 			}
@@ -125,9 +128,17 @@ Arguments cmdProcessArgs(char input[]) {
 		}
 		++i;
 	}
-	args.values[args.nb][ri-1] = '\0';
+	args.values[args.nb][ri - 1] = '\0';
 	++args.nb;
 	return args;
+}
+void CmdInscrire(char* prenom,char* nom, Contexte* context) {
+	Participant nv_parti;
+	strcpy(nv_parti.prenom, prenom);
+	strcpy(nv_parti.nom, nom);
+	context->participants.participants[context->participants.nb] = nv_parti;
+	++context->participants.nb;
+	printf("%s %s %d", prenom, nom, context->participants.nb);
 }
 
 ///Detection des commandes
@@ -135,9 +146,9 @@ void cmdProcess(char input[], Contexte* context) {
 
 	Arguments args;
 	args = cmdProcessArgs(input);
-	char commande[MAX_TEXTE+1];
+	char commande[MAX_TEXTE + 1];
 	strcpy(commande, args.values[0]);
-	
+
 	//PARTICIPANTS
 	if (!strcmp(commande, "PARTICIPANTS")) {
 		CmdParticipants(*context);
@@ -149,6 +160,15 @@ void cmdProcess(char input[], Contexte* context) {
 		}
 		else {
 			printf("CREER [titre]");
+		}
+	}
+	//INSCRIRE
+	else if (!strcmp(commande, "INSCRIRE")) {
+		if (args.nb == 3) {
+			CmdInscrire(args.values[1], args.values[2],context);
+		}
+		else {
+			printf("INSCRIRE [PRENOM] [NOM]");
 		}
 	}
 	//EXIT
