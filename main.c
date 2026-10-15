@@ -39,8 +39,8 @@ typedef struct {
 } ConcoursActifs;
 
 //Contexte de la session du programme
-//participants = Participants inscrits en mémoire
-//concouts = Concours inscrits en mémoire
+//participants = Participants inscrits en mÃ©moire
+//concouts = Concours inscrits en mÃ©moire
 //EXIT : si exit = 1 fin de la boucle
 typedef struct {
 	ParticipantsActif participants;
@@ -141,6 +141,19 @@ void CmdInscrire(char* prenom,char* nom, Contexte* context) {
 	printf("%s %s %d", prenom, nom, context->participants.nb);
 }
 
+void CmdGain(char* personne_id, char* concour_id, char* points, Contexte* context) {
+	int p_id = atoi(personne_id);
+	int c_id = atoi(concour_id);
+	int i_points = atoi(concour_id);
+	if (concour_id < context->concours.nb && concour_id >= 1 && personne_id > 1 && personne_id < context->participants.nb) {
+		context->concours.concours[c_id].inscipritions[p_id] += i_points;
+		printf("Gain enregistre");
+	}
+	else {
+		return;
+	}
+}
+
 ///Detection des commandes
 void cmdProcess(char input[], Contexte* context) {
 
@@ -171,6 +184,16 @@ void cmdProcess(char input[], Contexte* context) {
 			printf("INSCRIRE [PRENOM] [NOM]");
 		}
 	}
+	//GAIN
+	else if (!strcmp(commande, "INSCRIRE")) {
+		if (args.nb == 3) {
+			CmdGain(args.values[1], args.values[2], args.values[3], context);
+		}
+		else {
+			printf("GAIN [ID_PARTICIPANT] [ID_CONCOUR] [SOMME]");
+		}
+	}
+
 	//EXIT
 	else if (!strcmp(commande, "EXIT")) {
 		context->exit = 1;
