@@ -75,7 +75,7 @@ void CmdCreer(char titre[], Contexte* context) {
 	}
 
 	Concour nv_concour;
-	for (int i = 0; i<MAX_PARTICIPANTS; i++) {
+	for (int i = 0; i < MAX_PARTICIPANTS; i++) {
 		nv_concour.inscipritions[i] = 0;
 	}
 	strcpy(nv_concour.titre, titre);
@@ -88,11 +88,10 @@ void CmdCreer(char titre[], Contexte* context) {
 
 ///Commande PARTICIPANTS
 ///Affiche la liste des participants
-void CmdParticipants(Contexte context) {
-	ParticipantsActif participants = context.participants;
-	if (participants.nb != 0) {
-		for (int i = 0; i < participants.nb; ++i) {
-			Participant p = participants.participants[participants.nb];
+void CmdParticipants(Contexte* context) {
+	if (context->participants.nb != 0) {
+		for (int i = 0; i < context->participants.nb; ++i) {
+			Participant p = context->participants.participants[i];
 			printf("(%d) %s %s : X concours\n", i, p.nom, p.prenom);
 		}
 	}
@@ -103,8 +102,50 @@ void CmdParticipants(Contexte context) {
 
 ///Commande CONCOURS
 ///Affiche la liste des concours
-void CmdConcours() {
+void CmdConcours(Contexte* context) {
+	if (context->concours.nb != 0) {
+		for (int i = 0; i < context->concours.nb; ++i) {
+			Concour c = context->concours.concours[i];
+			printf("(%d) %s : X participants\n",i,c.titre);
+		}
+	}
+	else {
+		printf("Aucun concours cree");
+	}
+}
+void CmdScores(int id, Contexte* context) {
+	if (id>0 && id<= context->participants.nb) {
 
+	}
+	else {
+		printf("Identifiant incorrect");
+	}
+
+
+
+
+
+	if (context->concours.nb != 0) {
+		for (int i = 0; i < context->concours.nb; ++i) {
+			Concour c = context->concours.concours[i];
+			printf("(%d) %s : X participants\n", i, c.titre);
+		}
+	}
+	else {
+		printf("Aucun concours cree");
+	}
+}
+void CmdGain(char* personne_id, char* concour_id, char* points, Contexte* context) {
+	int p_id = atoi(personne_id);
+	int c_id = atoi(concour_id);
+	int i_points = atoi(concour_id);
+	if (concour_id < context->concours.nb && concour_id >= 1 && personne_id > 1 && personne_id < context->participants.nb) {
+		context->concours.concours[c_id].inscipritions[p_id] += i_points;
+		printf("Gain enregistre");
+	}
+	else {
+		return;
+	}
 }
 
 ///Recuperation des arguments
@@ -117,7 +158,7 @@ Arguments cmdProcessArgs(char input[]) {
 	//Lecture commande et arguments
 	while (input[i] != '\0') {
 		if (input[i] == ' ') {
-
+			args.values[args.nb][ri] = '\0';
 			++args.nb;
 			ri = 0;
 			if (args.nb > MAX_ARGS) {
@@ -135,26 +176,13 @@ Arguments cmdProcessArgs(char input[]) {
 	++args.nb;
 	return args;
 }
-void CmdInscrire(char* prenom,char* nom, Contexte* context) {
+void CmdInscrire(char* prenom, char* nom, Contexte* context) {
 	Participant nv_parti;
 	strcpy(nv_parti.prenom, prenom);
 	strcpy(nv_parti.nom, nom);
 	context->participants.participants[context->participants.nb] = nv_parti;
 	++context->participants.nb;
-	printf("%s %s %d", prenom, nom, context->participants.nb);
-}
-
-void CmdGain(char* personne_id, char* concour_id, char* points, Contexte* context) {
-	int p_id = atoi(personne_id);
-	int c_id = atoi(concour_id);
-	int i_points = atoi(concour_id);
-	if (concour_id < context->concours.nb && concour_id >= 1 && personne_id > 1 && personne_id < context->participants.nb) {
-		context->concours.concours[c_id].inscipritions[p_id] += i_points;
-		printf("Gain enregistre");
-	}
-	else {
-		return;
-	}
+	printf("Inscription enregistree (%d)",context->participants.nb);
 }
 
 ///Detection des commandes
@@ -167,7 +195,7 @@ void cmdProcess(char input[], Contexte* context) {
 
 	//PARTICIPANTS
 	if (!strcmp(commande, "PARTICIPANTS")) {
-		CmdParticipants(*context);
+		CmdParticipants(context);
 	}
 	//CREER
 	else if (!strcmp(commande, "CREER")) {
@@ -178,14 +206,27 @@ void cmdProcess(char input[], Contexte* context) {
 			printf("CREER [titre]");
 		}
 	}
+	//SCORES
+	else if (!strcmp(commande, "SCORES")) {
+		if (args.nb == 2) {
+			CmdScores(args.values[1], context);
+		}
+		else {
+			printf("SCORES [ID PARTICIPANTS]");
+		}
+	}
 	//INSCRIRE
 	else if (!strcmp(commande, "INSCRIRE")) {
 		if (args.nb == 3) {
-			CmdInscrire(args.values[1], args.values[2],context);
+			CmdInscrire(args.values[1], args.values[2], context);
 		}
 		else {
 			printf("INSCRIRE [PRENOM] [NOM]");
 		}
+	}
+	//CONCOURS
+	else if (!strcmp(commande, "CONCOURS")) {
+		CmdConcours(context);
 	}
 	//GAIN
 	else if (!strcmp(commande, "INSCRIRE")) {
@@ -196,7 +237,6 @@ void cmdProcess(char input[], Contexte* context) {
 			printf("GAIN [ID_PARTICIPANT] [ID_CONCOUR] [SOMME]");
 		}
 	}
-
 	//EXIT
 	else if (!strcmp(commande, "EXIT")) {
 		context->exit = 1;
