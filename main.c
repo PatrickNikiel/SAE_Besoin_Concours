@@ -75,6 +75,9 @@ void CmdCreer(char titre[], Contexte* context) {
 	}
 
 	Concour nv_concour;
+	for (int i = 0; i<MAX_PARTICIPANTS; i++) {
+		nv_concour.inscipritions[i] = 0;
+	}
 	strcpy(nv_concour.titre, titre);
 
 	context->concours.concours[context->concours.nb] = nv_concour;
