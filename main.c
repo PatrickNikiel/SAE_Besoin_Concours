@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
 #pragma warning(disable:4996)
 enum { MAX_PARTICIPANTS = 100 };
@@ -92,7 +93,10 @@ void CmdParticipants(Contexte* context) {
 	if (context->participants.nb != 0) {
 		for (int i = 0; i < context->participants.nb; ++i) {
 			Participant p = context->participants.participants[i];
-			printf("(%d) %s %s : X concours\n", i, p.nom, p.prenom);
+			printf("(%d) %s %s : X concours", i+1, p.prenom, p.nom);
+			if (i <= context->concours.nb) {
+				printf("\n");
+			}
 		}
 	}
 	else {
@@ -106,15 +110,19 @@ void CmdConcours(Contexte* context) {
 	if (context->concours.nb != 0) {
 		for (int i = 0; i < context->concours.nb; ++i) {
 			Concour c = context->concours.concours[i];
-			printf("(%d) %s : X participants\n",i,c.titre);
+			printf("(%d) %s : X participants",i,c.titre);
+			if (i-1 < context->concours.nb) {
+				printf("\n");
+			}
 		}
 	}
 	else {
 		printf("Aucun concours cree");
 	}
 }
-void CmdScores(int id, Contexte* context) {
-	if (id>0 && id<= context->participants.nb) {
+void CmdScores(char* id, Contexte* context) {
+	int i_id = atoi(id);
+	if (i_id>0 && i_id<= context->participants.nb) {
 
 	}
 	else {
@@ -135,11 +143,13 @@ void CmdScores(int id, Contexte* context) {
 		printf("Aucun concours cree");
 	}
 }
+
+
 void CmdGain(char* personne_id, char* concour_id, char* points, Contexte* context) {
 	int p_id = atoi(personne_id);
 	int c_id = atoi(concour_id);
 	int i_points = atoi(concour_id);
-	if (concour_id < context->concours.nb && concour_id >= 1 && personne_id > 1 && personne_id < context->participants.nb) {
+	if (c_id < context->concours.nb && c_id >= 1 && p_id > 1 && p_id < context->participants.nb) {
 		context->concours.concours[c_id].inscipritions[p_id] += i_points;
 		printf("Gain enregistre");
 	}
@@ -229,7 +239,7 @@ void cmdProcess(char input[], Contexte* context) {
 		CmdConcours(context);
 	}
 	//GAIN
-	else if (!strcmp(commande, "INSCRIRE")) {
+	else if (!strcmp(commande, "GAIN")) {
 		if (args.nb == 3) {
 			CmdGain(args.values[1], args.values[2], args.values[3], context);
 		}
@@ -256,7 +266,7 @@ int main() {
 	int result = 0;
 	while (contexte.exit == 0) {
 		char commande[MAX_TEXTE] = "";
-		fgets(commande, MAX_TEXTE, stdin);
+		fgets(commande, MAX_TEXTE*MAX_ARGS, stdin);
 		cmdProcess(commande, &contexte);
 	}
 }
