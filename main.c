@@ -107,7 +107,32 @@ void CmdParticipants(Contexte* context) {
 		printf("Aucun participant inscrit");
 	}
 }
+//classment
+void CmdClassement(char* concour_id, Contexte* context) {
+	int c_id = atoi(concour_id)-1;
+	if (c_id >= 0 && c_id <= context->concours.concours) {
+		Concour c = context->concours.concours[c_id];
+		printf("%s", c.titre);
+		int iparti = 0;
+		for (int i = 0; i < context->participants.nb; ++i) {
+			int iscores = c.scores[i];
+			char iprenom = context->participants.participants->prenom[i];
+			char inom = context->participants.participants->nom[i];
+			if (iscores > 0) {
+				printf("%s -> (%s) %d %d : %d points", i + 1, iprenom, inom, iscores);
+				++iparti;
+			}
+		}
+		if (iparti == 0) {
+			printf("Aucun participant");
+		}
+	}
+	else {
+		printf("Identifiant incorrect");
+	}
 
+
+}
 
 ///Commande CONCOURS
 ///Affiche la liste des concours
@@ -254,6 +279,15 @@ void cmdProcess(char input[], Contexte* context) {
 		}
 		else {
 			printf("CREER [titre]");
+		}
+	}
+	//CLASSEMENT
+	else if (!strcmp(commande, "CLASSEMENT")) {
+		if (args.nb == 2) {
+			CmdClassement(args.values[1], context);
+		}
+		else {
+			printf("CLASSEMENT [ID CONCOURS]");
 		}
 	}
 	//SCORES
