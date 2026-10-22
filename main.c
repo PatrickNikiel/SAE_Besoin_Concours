@@ -202,6 +202,38 @@ void CmdInscrire(char* prenom, char* nom, Contexte* context) {
 	printf("Inscription enregistree (%d)", context->participants.nb);
 }
 
+void CmdComparaison(char* concour_1, char* concour_2, Contexte* contexte) {
+	int i_concour_1 = atoi(concour_1)-1;
+	int i_concour_2 = atoi(concour_2)-1;
+	if (i_concour_1 < 0 || i_concour_1 >= contexte->concours.nb) {
+		printf("Identifiant incorrect");
+		return;
+	}
+	if (i_concour_2 < 0 || i_concour_2 >= contexte->concours.nb) {
+		printf("Identifiant incorrect");
+		return;
+	}
+	printf("%s versus %s\n", contexte->concours.concours[i_concour_1].titre, contexte->concours.concours[i_concour_2].titre);
+	int count = 0;
+	for (int id = 0; id < contexte->participants.nb; id++) {
+		int score_1 = contexte->concours.concours[i_concour_1].scores[id];
+		int score_2 = contexte->concours.concours[i_concour_2].scores[id];
+		if (score_1 > 0 && score_2 > 0) {
+			printf("(%d) %s %s : ", id+1, contexte->participants.participants[id].nom, contexte->participants.participants[id].prenom);
+			printf("%d point%c/%d points : %.2f%%", score_1, score_1>1?'s':0, score_2, (float)score_1 / score_2);
+			count++;
+		}
+		else {
+			if (score_1 + score_2 > 0) {
+				printf("Concours incompatibles");
+				return;
+			}
+		}
+	}
+	if (count <= 0) {
+		printf("Aucun participant");
+	}
+}
 
 ///Detection des commandes
 void cmdProcess(char input[], Contexte* context) {
@@ -253,6 +285,15 @@ void cmdProcess(char input[], Contexte* context) {
 		}
 		else {
 			printf("GAIN [ID_PARTICIPANT] [ID_CONCOUR] [SOMME]");
+		}
+	}
+	//COMPARAISON
+	else if (!strcmp(commande, "COMPARAISON")) {
+		if (args.nb == 3) {
+			CmdComparaison(args.values[1], args.values[2], context);
+		}
+		else {
+			printf("COMPARAISON [CONCOUR_1] [CONCOUR_2]");
 		}
 	}
 	//EXIT
