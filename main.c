@@ -94,10 +94,10 @@ void CmdParticipants(Contexte* context) {
 		for (int i = 0; i < context->participants.nb; ++i) {
 			Participant p = context->participants.participants[i];
 			int count = 0;
-			for (int c = 0; c<context->concours.nb; c++) {
+			for (int c = 0; c < context->concours.nb; c++) {
 				count += (context->concours.concours[c].scores[i] == 0) ? 0 : 1;
 			}
-			printf("(%d) %s %s : %d concours", i+1, p.prenom, p.nom, count);
+			printf("(%d) %s %s : %d concours", i + 1, p.prenom, p.nom, count);
 			if (i < context->concours.nb) {
 				printf("\n");
 			}
@@ -119,7 +119,7 @@ void CmdConcours(Contexte* context) {
 			for (int p = 0; p < context->participants.nb; p++) {
 				count += (context->concours.concours->scores[p] == 0) ? 0 : 1;
 			}
-			printf("(%d) %s : %d participants",i+1,c.titre, count);
+			printf("(%d) %s : %d participants", i + 1, c.titre, count);
 			if (i < context->concours.nb) {
 				printf("\n");
 			}
@@ -130,23 +130,24 @@ void CmdConcours(Contexte* context) {
 	}
 }
 void CmdScores(char* id, Contexte* context) {
-	int i_id = atoi(id);
-	if (i_id>0 && i_id<= context->participants.nb) {
-
-	}
-	else {
-		printf("Identifiant incorrect");
-	}
-
-
-	if (context->concours.nb != 0) {
+	int i_id = atoi(id)-1;
+	int nb_scores = 0;
+	Participant p = context->participants.participants[i_id];
+	if (i_id >= 0 && i_id <= context->participants.nb) {
+		printf("%s %s\n", p.prenom, p.nom);
 		for (int i = 0; i < context->concours.nb; ++i) {
 			Concour c = context->concours.concours[i];
-			printf("(%d) %s : X participants\n", i, c.titre);
+			if (c.scores[i] > 0) {
+				printf("(%d) %s : %d points\n",i+1 , c.titre,c.scores[i]);
+				++nb_scores;
+			}
+		}
+		if (nb_scores == 0) {
+			printf("Aucun gai\n");
 		}
 	}
 	else {
-		printf("Aucun concours cree");
+		printf("Identifiant incorrect\n");
 	}
 }
 
@@ -154,7 +155,7 @@ void CmdScores(char* id, Contexte* context) {
 void CmdGain(char* personne_id, char* concour_id, char* points, Contexte* context) {
 	int p_id = atoi(personne_id) - 1;
 	int c_id = atoi(concour_id) - 1;
-	int i_points = atoi(concour_id);
+	int i_points = atoi(points);
 	if (c_id < context->concours.nb && c_id >= 0 && p_id >= 0 && p_id < context->participants.nb) {
 		context->concours.concours[c_id].scores[p_id] += i_points;
 		printf("Gain enregistre");
@@ -198,7 +199,7 @@ void CmdInscrire(char* prenom, char* nom, Contexte* context) {
 	strcpy(nv_parti.nom, nom);
 	context->participants.participants[context->participants.nb] = nv_parti;
 	++context->participants.nb;
-	printf("Inscription enregistree (%d)",context->participants.nb);
+	printf("Inscription enregistree (%d)", context->participants.nb);
 }
 
 
@@ -273,7 +274,7 @@ int main() {
 	int result = 0;
 	while (contexte.exit == 0) {
 		char commande[MAX_TEXTE] = "";
-		fgets(commande, MAX_TEXTE*MAX_ARGS, stdin);
+		fgets(commande, MAX_TEXTE * MAX_ARGS, stdin);
 		cmdProcess(commande, &contexte);
 	}
 }
