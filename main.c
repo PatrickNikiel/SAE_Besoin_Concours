@@ -28,7 +28,7 @@ typedef struct {
 //inscription = Tableau des identifiants des participants inscrits
 typedef struct {
 	char titre[MAX_TEXTE];
-	int inscipritions[MAX_PARTICIPANTS];
+	int scores[MAX_PARTICIPANTS];
 } Concour;
 
 //Ensemble des concours actifs
@@ -77,7 +77,7 @@ void CmdCreer(char titre[], Contexte* context) {
 
 	Concour nv_concour;
 	for (int i = 0; i < MAX_PARTICIPANTS; i++) {
-		nv_concour.inscipritions[i] = 0;
+		nv_concour.scores[i] = 0;
 	}
 	strcpy(nv_concour.titre, titre);
 
@@ -93,8 +93,12 @@ void CmdParticipants(Contexte* context) {
 	if (context->participants.nb != 0) {
 		for (int i = 0; i < context->participants.nb; ++i) {
 			Participant p = context->participants.participants[i];
-			printf("(%d) %s %s : X concours", i+1, p.prenom, p.nom);
-			if (i <= context->concours.nb) {
+			int count = 0;
+			for (int c = 0; c<context->concours.nb; c++) {
+				count += (context->concours.concours[c].scores[i] == 0) ? 0 : 1;
+			}
+			printf("(%d) %s %s : %d concours", i+1, p.prenom, p.nom, count);
+			if (i < context->concours.nb) {
 				printf("\n");
 			}
 		}
@@ -104,14 +108,19 @@ void CmdParticipants(Contexte* context) {
 	}
 }
 
+
 ///Commande CONCOURS
 ///Affiche la liste des concours
 void CmdConcours(Contexte* context) {
 	if (context->concours.nb != 0) {
 		for (int i = 0; i < context->concours.nb; ++i) {
 			Concour c = context->concours.concours[i];
-			printf("(%d) %s : X participants",i,c.titre);
-			if (i-1 < context->concours.nb) {
+			int count = 0;
+			for (int p = 0; p < context->participants.nb; p++) {
+				count += (context->concours.concours->scores[p] == 0) ? 0 : 1;
+			}
+			printf("(%d) %s : %d participants",i+1,c.titre, count);
+			if (i < context->concours.nb) {
 				printf("\n");
 			}
 		}
@@ -130,9 +139,6 @@ void CmdScores(char* id, Contexte* context) {
 	}
 
 
-
-
-
 	if (context->concours.nb != 0) {
 		for (int i = 0; i < context->concours.nb; ++i) {
 			Concour c = context->concours.concours[i];
@@ -146,11 +152,11 @@ void CmdScores(char* id, Contexte* context) {
 
 
 void CmdGain(char* personne_id, char* concour_id, char* points, Contexte* context) {
-	int p_id = atoi(personne_id);
-	int c_id = atoi(concour_id);
+	int p_id = atoi(personne_id) - 1;
+	int c_id = atoi(concour_id) - 1;
 	int i_points = atoi(concour_id);
-	if (c_id < context->concours.nb && c_id >= 1 && p_id > 1 && p_id < context->participants.nb) {
-		context->concours.concours[c_id].inscipritions[p_id] += i_points;
+	if (c_id < context->concours.nb && c_id >= 0 && p_id >= 0 && p_id < context->participants.nb) {
+		context->concours.concours[c_id].scores[p_id] += i_points;
 		printf("Gain enregistre");
 	}
 	else {
@@ -194,6 +200,7 @@ void CmdInscrire(char* prenom, char* nom, Contexte* context) {
 	++context->participants.nb;
 	printf("Inscription enregistree (%d)",context->participants.nb);
 }
+
 
 ///Detection des commandes
 void cmdProcess(char input[], Contexte* context) {
@@ -240,7 +247,7 @@ void cmdProcess(char input[], Contexte* context) {
 	}
 	//GAIN
 	else if (!strcmp(commande, "GAIN")) {
-		if (args.nb == 3) {
+		if (args.nb == 4) {
 			CmdGain(args.values[1], args.values[2], args.values[3], context);
 		}
 		else {
