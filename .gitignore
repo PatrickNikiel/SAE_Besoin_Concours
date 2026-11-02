@@ -1,3 +1,12 @@
 MakeFile
 main.exe
 inout
+doc.synctex.gz
+doc.toc
+doc.aux
+doc.out
+doc.fdb_latexmk
+doc.fls
+doc.log
+result.txt
+.vs

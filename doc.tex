@@ -1,0 +1,185 @@
+\documentclass{article}
+\usepackage{xstring}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\pagestyle{fancy}
+
+
+\newcommand{\commande}[3]{
+	\subsection{#1}
+	Utilisation de la commande :\newline #1 #2\newline
+	Description :\newline#3
+}
+
+\newcommand{\fonction}[3]{
+	\StrBehind{#1}{ }[\nomfunc]
+	\StrBefore{#1}{ }[\typefunc]
+	\subsection{\nomfunc}
+	\textbf{Valeur de retour :}\newline \typefunc\newline
+	\textbf{Arguments :}\newline #2\newline
+	\textbf{Fonctionnement :}\newline #3
+}
+
+\newcommand{\structure}[3]{
+	\subsection{#1}
+	\textbf{Description :}
+	#2\newline
+	\textbf{Contenu :}\newline
+	#3
+}
+
+\begin{document}
+
+\author{Patrick NIKIEL}
+\title{DCT : SAE C}
+\maketitle
+
+\fancyfoot[L]{DCT : SAE C}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{Patrick NIKIEL}
+
+\tableofcontents
+
+\section{Le projet}
+\subsection{Description}
+Le projet a pour but de faire une application console ayant pour but de faire de la gestion de concours avec des commandes pour divers domaines.\\
+L'application permet a l'utilisateur de créer des tournois et des participants. On peut manipuler les scores des participants, les inscrires et obtenir des informations intéressantes.
+\subsection{Les limites de la SAE}
+Le C oppose plusieurs contraintes au projet. Tout d'abord, chaque liste du programme possède une limite fixe (étant donné que l'on a pas vu l'allocation de mémoire en cours).
+Pour ne pas rendre le projet trop complexe, on omet toute opération de suppréssion: on ne peut pas supprimer de participant ni de concours.\\
+Certains "edge case" ne sont pas demandé à être réglé (ex: dépassement de la limite de participants)
+
+\section{Fonctions}
+\fonction{void plural}{int value}{
+	Affiche un "s" si jamais \textbf{value} est supérieur à 1
+}
+
+\label{sec:sort}
+\fonction{void sortIdsByScore}{int* ids, int* scores, int size}{
+	Soit \textbf{ids} et \textbf{scores} deux tableaux de pointeurs d'entiers de taille \textbf{size}, range
+	le tableau \textbf{ids} par ordre croissant selon leurs score associé dans \textbf{scores} 
+}
+
+\fonction{int storeActiveParticipants}{int* in, Concour* concour, int nb\_participants}{
+	Retourne le nombre de participant avec un score supérieur a 0 dans le concour \textbf{concour} et place chaque participant actif dans le tableau \textbf{in}. Les participants du concours seront parcourus que jusqu'a l'index \textbf{nb\_participants}
+}
+
+\label{sec:ex}
+\fonction{int isParticipantEx}{int* scores, int* participants, int id, int participants\_nb, int* before\_score, int* score}{
+	Retourne 1 si le participant est ex-equo avec un autre, retourne faux dans l'autre cas.
+}
+
+\fonction{Arguments cmdProcessArgs}{char input[]}{
+	On parcours l'entrée de l'utilisateur \textbf{input} jusqu'a la fin de la chaîne de caractères, si on tombe sur un espace, on incremente le nombre d'argument et on met l'index relatif (au début de l'argument) à 0. Si le caractère n'est pas un espace alors on ajoute le caractère a la chaîne correspondante a l'argument dans un tableau d'arguments. On retourne le nombre d'argument et le tableau d'arguments dans une structure.
+}
+
+\fonction{void cmdProcess}{char input[], Contexte* context}{
+	Fonction "principale" du programme, on récupère l'entrée de l'utilisateur et on vérifie si l'entrée correspond a une commande et qu'elle est dans le bon format. 
+}
+
+\section{Structures}
+\structure{Participant}{
+Contenu d'un participant\\
+nom = Nom du participant\\
+prenom = Prenom du participant
+}{
+	char nom[MAX\_TEXTE];\\
+	char prenom[MAX\_TEXTE];
+}
+
+\structure{ParticipantsActif}{
+Ensemble des participants inscrits\\
+participant = Ensemble des participants\\
+nb = Nombre de participants
+}
+{
+	Participant participants[MAX\_PARTICIPANTS];\\
+	int nb;
+}
+\structure{Concour}{
+Contenu d'un concour\\
+titre = Titre du concour\\
+inscription = Tableau des identifiants des participants inscrits
+}
+{
+	char titre[MAX\_TEXTE];\\
+	int scores[MAX\_PARTICIPANTS];\\
+	int positions[MAX\_PARTICIPANTS];
+}
+
+
+\structure{ConcoursActifs}{
+Ensemble des concours actifs\\
+concours = Ensemble des concours\\
+nb = Nombre de concours
+}
+{
+	Concour concours[MAX\_CONCOURS];\\
+	int nb;
+}
+
+\structure{Contexte}{
+Contexte de la session du programme\\
+participants = Participants inscrits en mémoire\\
+concours = Concours inscrits en mémoire\\
+EXIT : si exit = 1 fin de la boucle
+}
+{
+	ParticipantsActif participants;\\
+	ConcoursActifs concours;\\
+	int exit;
+}
+
+\structure{Arguments}{
+Arguments de la commande utilisateur\\
+values = Liste de valeurs des arguments\\
+nb = Nombre d'arguments
+}
+{
+	char values[MAX\_ARGS][MAX\_TEXTE];\\
+	int nb;
+}
+
+\section{Commandes}
+\commande{EXIT}{a}{
+	Sert a quitter l'application console. Met l'attribut EXIT du contexte a 1, stoppant la boucle de la fonction main du programme.
+}
+
+\commande{INSCRIRE}{PRENOM NOM}{
+	Inscrit le participant avec son nom et prenom dans le tableau participants du contexte et incremente le nombre de participants dans le contexte
+}
+
+\commande{PARTICIPANTS}{}{
+	Affiche tous les participants en les parcourants par identifiants et compte le nombre de concour auquel il a participé en parcourants le tableau de concours dans le contexte. Affiche l'identifiant, le prenom, le nom et le nombre de concours auquels le participant a obtenu des points.
+}
+
+\commande{CREER}{TITRE}{
+	Créer un nouveau concour, vérification si un concour avec le même nom existe en parcourant tous les concours. Mise a zero des points pour tout les participants sur ce concours. Tous les participants ont la première place par défaut.
+}
+
+\commande{CONCOURS}{}{
+	Affiche la liste de concours avec leurs nombre de participants
+}
+
+\commande{GAIN}{ID\_PARTICIPANT ID\_CONCOUR SOMME}{
+	Ajoute une valeur au score d'un participant par identifiant sur le concour lui aussi indiqué par identifiant
+}
+
+\commande{SCORES}{ID\_PARTICIPANT}{
+	Affiche les scores du participants pour chaque concour ou il a participé. Parcour de la liste des concours à l'index de l'identifiant du participant
+}
+
+\label{sec:conc}
+\commande{CLASSEMENT}{ID\_CONCOUR}{
+	Affiche le classement d'un concours. Si deux participants on un score égal, il sont afficher comme ex-equo. On stoque une liste de participants, on la trie par score avec la fonction (\ref{sec:sort}) puis on verifie si le participant est ex-equo avec la fonction (\ref{sec:ex}). Pour voir si on incremente le rang du participant a afficher, on verifie si le participant précendent à le même score, si il n'a pas le même score alors on n'incrémente pas.
+}
+
+\commande{COMPARAISON}{CONCOUR\_1 CONCOUR\_2}{
+	Dans un premier temps on vérifie si il y a des participants communs entre les deux concours, puis si ils sont compatibles. Une fois cela fait, on affiche le taux de différence entre les deux scores du participant sur chaque concour.
+}
+
+\commande{BILAN}{ID\_CONCOUR}{
+	Même opérations que pour (\ref{sec:conc}), mais on stoque le rang du participant dans un tableau du concour et on affiche sa différence avec son précendent rang (mis à jour lors du dernier appel de la commande BILAN ou lors de l'inscription)
+}
+
+\end{document}
